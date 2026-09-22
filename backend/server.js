@@ -5,7 +5,7 @@ import neo4j from 'neo4j-driver';
 import 'dotenv/config';
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
-import SimulationLora from './loraSimulation.js';
+import { trouverPyloneProche } from './geoUtils.js';
 
 const app = express();
 app.use(cors());
@@ -161,11 +161,13 @@ app.get('/api/pylones/bbox', async (req, res) => {
 });
 
 // ============================================================
-// SIMULATION LORA (temps reel via WebSocket)
+// LORA : lecture temps reel depuis Neo4j + diffusion WebSocket
+// (le deplacement est fait par un script a part : simulateurLora.js,
+//  ce serveur ne fait que LIRE la base et relayer aux clients)
 // ============================================================
 
-// Recupere la liste des pylones depuis Neo4j (reutilise pour que les
-// devices LoRa puissent calculer leur pylone le plus proche)
+// Recupere la liste des pylones depuis Neo4j (pour calculer le pylone
+// le plus proche de chaque dispositif LoRa)
 async function chargerPylones() {
     try {
         const records = await query(`
@@ -175,15 +177,27 @@ async function chargerPylones() {
         `);
         return records.map(toNative);
     } catch (err) {
-        console.error('Erreur chargement pylones pour simulation :', err.message);
+        console.error('Erreur chargement pylones :', err.message);
         return [];
     }
 }
 
-const NB_DISPOSITIFS_LORA = 20;
-const INTERVALLE_TICK_S = 2; // duree simulee entre deux positions (en secondes)
+// Lit l'etat courant de tous les dispositifs LoRa dans Neo4j
+async function chargerLoraDepuisNeo4j() {
+    try {
+        const records = await query(`
+            MATCH (l:Lora)
+            RETURN l.id AS id, l.lat AS lat, l.lon AS lon, l.batterie AS batterie
+        `);
+        return records.map(toNative);
+    } catch (err) {
+        console.error('Erreur lecture LoRa :', err.message);
+        return [];
+    }
+}
 
-const simulation = new SimulationLora(NB_DISPOSITIFS_LORA);
+let pylonesCache = [];
+const INTERVALLE_LECTURE_S = 2; // frequence de lecture de la base (en secondes)
 
 // httpServer commun a Express (routes REST) et au WebSocket (flux temps reel)
 const httpServer = createServer(app);
@@ -198,10 +212,36 @@ function diffuserEtat(etat) {
     });
 }
 
-wss.on('connection', (ws) => {
+// Va chercher les positions dans Neo4j, calcule le pylone le plus proche
+// de chaque dispositif, et renvoie le format attendu par le frontend
+// (identique a l'ancienne version simulee en memoire -> Carte.jsx ne change pas)
+async function lireEtDiffuser() {
+    const dispositifsBruts = await chargerLoraDepuisNeo4j();
+    const etat = dispositifsBruts.map((d) => {
+        const proche = trouverPyloneProche(d.lat, d.lon, pylonesCache);
+        return {
+            id: d.id,
+            lat: d.lat,
+            lng: d.lon,
+            batterie: d.batterie,
+            pylone_proche: proche ? {
+                code_site: proche.pylone.code_site,
+                nom: proche.pylone.nom,
+                lat: parseFloat(proche.pylone.lat),
+                lng: parseFloat(proche.pylone.lon),
+                distance_m: Math.round(proche.distance)
+            } : null
+        };
+    });
+    diffuserEtat(etat);
+    return etat;
+}
+
+wss.on('connection', async (ws) => {
     console.log('Client WebSocket connecte (', wss.clients.size, 'client(s) )');
     // Envoie l'etat courant immediatement a ce nouveau client
-    ws.send(JSON.stringify({ type: 'lora_update', dispositifs: simulation.etat() }));
+    const etat = await lireEtDiffuser();
+    ws.send(JSON.stringify({ type: 'lora_update', dispositifs: etat }));
 
     ws.on('close', () => {
         console.log('Client WebSocket deconnecte (', wss.clients.size, 'restant(s) )');
@@ -217,13 +257,11 @@ httpServer.listen(PORT, async () => {
     console.log(`   Test : http://localhost:${PORT}/api/pylones`);
     console.log(`   WebSocket LoRa : ws://localhost:${PORT}`);
 
-    const pylones = await chargerPylones();
-    simulation.setPylones(pylones);
-    console.log(`   ${pylones.length} pylones charges pour la simulation LoRa`);
+    pylonesCache = await chargerPylones();
+    console.log(`   ${pylonesCache.length} pylones charges`);
 
-    // Boucle de simulation : avance les positions et diffuse a tous les clients
-    setInterval(() => {
-        const etat = simulation.tick(INTERVALLE_TICK_S);
-        diffuserEtat(etat);
-    }, INTERVALLE_TICK_S * 1000);
+    // Boucle de lecture : relit Neo4j et diffuse a tous les clients connectes.
+    // Le mouvement lui-meme est fait par simulateurLora.js (a lancer a part) :
+    //     node simulateurLora.js
+    setInterval(lireEtDiffuser, INTERVALLE_LECTURE_S * 1000);
 });
