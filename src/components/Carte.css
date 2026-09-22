@@ -1,0 +1,337 @@
+/* PANNEAU ITINERAIRE */
+.itineraire-panel {
+    position: absolute;
+    bottom: 30px;
+    right: 90px;
+    z-index: 1000;
+    font-family: inherit;
+}
+
+.itineraire-toggle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 0;
+    background: #1a73e8;
+    color: white;
+    font-size: 26px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(26, 115, 232, 0.4);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.itineraire-toggle:hover {
+    background: #1557b0;
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(26, 115, 232, 0.5);
+}
+
+.itineraire-contenu {
+    width: 340px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.2);
+    padding: 18px;
+    animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.itineraire-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.itineraire-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.itineraire-fermer {
+    background: transparent;
+    border: 0;
+    font-size: 18px;
+    color: #888;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.15s;
+}
+
+.itineraire-fermer:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.itineraire-champ {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: border-color 0.15s;
+}
+
+.itineraire-champ:focus-within {
+    border-color: #1a73e8;
+    background: white;
+}
+
+.itineraire-champ .icone {
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.itineraire-champ input {
+    flex: 1;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: 14px;
+    color: #333;
+    font-family: inherit;
+}
+
+.itineraire-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.btn-calculer,
+.btn-effacer {
+    flex: 1;
+    padding: 11px;
+    border-radius: 8px;
+    border: 0;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+}
+
+.btn-calculer {
+    background: #1a73e8;
+    color: white;
+}
+
+.btn-calculer:hover:not(:disabled) {
+    background: #1557b0;
+}
+
+.btn-effacer {
+    background: #f0f0f0;
+    color: #555;
+}
+
+.btn-effacer:hover {
+    background: #e0e0e0;
+}
+
+.itineraire-infos {
+    margin-top: 14px;
+    padding: 12px;
+    background: #e8f0fe;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.info-ligne {
+    margin: 4px 0;
+    color: #1a3d7c;
+}
+
+.itineraire-erreur {
+    margin-top: 14px;
+    padding: 12px;
+    background: #fdecea;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #c5221f;
+}
+
+/* BULLE D'INFO PYLONE (dans la carte Google) */
+.bulle-pylone {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    min-width: 240px;
+    max-width: 300px;
+    padding: 4px;
+}
+
+.bulle-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #1a73e8;
+}
+
+.bulle-header h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.bulle-icone {
+    font-size: 20px;
+}
+
+.bulle-corps {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.bulle-ligne {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.4;
+}
+
+.bulle-ligne strong {
+    color: #333;
+    margin-right: 4px;
+}
+
+.bulle-badges {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+}
+
+.badge-2g { background: #3498db; }
+.badge-3g { background: #9b59b6; }
+.badge-4g { background: #e74c3c; }
+.badge-5g { background: #27ae60; }
+
+.bulle-coords {
+    font-size: 11px;
+    color: #999;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+
+/* Style general de l'InfoWindow de Google */
+.gm-style .gm-style-iw-c {
+    border-radius: 12px !important;
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.2) !important;
+    padding: 12px !important;
+}
+
+.gm-style .gm-style-iw-d {
+    overflow: hidden !important;
+}
+
+/* Conteneur principal */
+.carte-wrapper {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* Compteur en haut a gauche */
+.compteur {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+}
+
+.compteur span {
+    color: #e74c3c;
+}
+
+/* Boutons de zoom en bas a droite */
+.zoom-controls {
+    position: absolute;
+    right: 20px;
+    bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1000;
+}
+
+.zoom-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background: white;
+    color: #333;
+    font-size: 22px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    transition: all 0.15s ease;
+    font-family: inherit;
+}
+
+.zoom-btn:hover {
+    background: #f5f5f5;
+    transform: translateY(-1px);
+}
+
+/* Credit OSRM */
+.itineraire-credit {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+}
+
+/* Bouton desactive pendant le calcul */
+.btn-calculer:disabled {
+    background: #a0c4f0;
+    cursor: not-allowed;
+}
